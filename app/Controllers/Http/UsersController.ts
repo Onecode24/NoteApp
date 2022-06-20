@@ -5,6 +5,7 @@ import User from "App/Models/User";
 import UserValidator from "App/Validators/UserValidator";
 import bcrypt = require('bcrypt')
 
+
 export default class UsersController {
 
   async signup({request,response}){
@@ -25,7 +26,8 @@ export default class UsersController {
     try {
 
       const {uiid,password} = request.only(['uiid','password'])
-      //
+      console.log(uiid,password);
+
       const data = (await Database.table('users')).values()
       let user,hashPass;
       while(user = data.next().value){

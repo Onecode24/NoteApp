@@ -9,7 +9,6 @@ export default class NotesController {
   async newNote({request,response}){
     try {
       const newNote = await request.validate(NoteValidator);
-      console.log(newNote);
 
       await Note.create(newNote);
       response.send({
@@ -17,7 +16,6 @@ export default class NotesController {
       })
 
     } catch (error) {
-      console.log(error);
       response.status(400).json({
         message : error
       })
@@ -25,24 +23,92 @@ export default class NotesController {
   }
 
 
-  async allNotes({request,response,params}){
+  async allNotes({response,params}){
     try {
 
-      const id = params.id;
+      const userid = params.userID;
 
       const allNote = await Database
       .from('notes')
       .select('*')
-      .where('user',id)
+      .where('user',userid)
 
       response.send(allNote);
 
     } catch (error) {
-      console.log(error);
       response.status(400).json({
-        error : error
+        error : console.error(error)
+      })
+    }
+  }
+
+  async note({params,response}){
+    try {
+      const id = params.id;
+
+      const note = await Database
+      .from('notes')
+      .select('*')
+      .where('id',id)
+
+      response.send(note)
+    } catch (error) {
+      response.status(400).json({
+        error : console.error(error)
+      })
+    }
+  }
+
+  async updateNote({request,params,response}){
+    try {
+      await Database
+      .from('notes')
+      .where('id',params.id)
+      .update(request.body())
+
+      response.send({
+        message : "Notes is already update"
+      })
+
+    } catch (error) {
+      response.status(404).json({
+        message :" Request body invalid"
+      })
+    }
+  }
+
+  async onenote({params,response}){
+    try {
+    const note = await Database
+    .from('notes')
+    .select('*')
+    .where('id',params.id)
+
+    response.send(note);
+    } catch (error) {
+      response.status(404).json({
+        error : "Note "+params.id+" not found"
+      })
+    }
+  }
+
+  async deleteNote({params,response}){
+    try {
+      await Database
+      .from('notes')
+      .where('id',params.id)
+      .delete()
+
+      response.send({
+        message : "note already delete"
+      })
+
+    } catch (error) {
+      response.status(404).json({
+        message : " Request Invalid"
       })
     }
   }
 
 }
+

@@ -1,7 +1,8 @@
 import Route from '@ioc:Adonis/Core/Route'
 
+Route.group(() => {
 
+  Route.post('/register','UsersController.register')
+  Route.post('/login','UsersController.login');
 
-Route.post('/signup','UsersController.signup')
-
-Route.post('/login','UsersController.login');
+}).prefix('/api/v1/auth')

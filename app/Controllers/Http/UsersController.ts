@@ -1,6 +1,5 @@
 // import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 
-import Database from "@ioc:Adonis/Lucid/Database";
 import User from "App/Models/User";
 import UserValidator from "App/Validators/UserValidator";
 import bcrypt = require('bcrypt')
@@ -8,7 +7,7 @@ import bcrypt = require('bcrypt')
 
 export default class UsersController {
 
-  async signup({request,response}){
+  async register({request,response}){
     try {
       const newUser =await request.validate(UserValidator);
       console.log(newUser);
@@ -26,20 +25,11 @@ export default class UsersController {
     try {
 
       const {uiid,password} = request.only(['uiid','password'])
-      console.log(uiid,password);
+      const user = await User.findBy('username',uiid)
 
-      const data = (await Database.table('users')).values()
-      let user,hashPass;
-      while(user = data.next().value){
-        if(user.email == uiid || user.username == uiid){
-          hashPass = user.password;
-          break;
-        }
-      }
+      if(user){
 
-      if(user!=undefined){
-
-        const match = await bcrypt.compare(password,hashPass);
+        const match = await bcrypt.compare(password,user.password);
         if(match){
           console.log("connected");
           response.send({

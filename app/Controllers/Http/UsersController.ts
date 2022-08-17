@@ -5,6 +5,7 @@ import UserValidator from "App/Validators/UserValidator";
 import bcrypt = require('bcrypt')
 
 
+
 export default class UsersController {
 
   async register({request,response}){
@@ -21,7 +22,7 @@ export default class UsersController {
     }
   }
 
-  async login({request,response}){
+  async login({request,response,session}){
     try {
 
       const {uiid,password} = request.only(['uiid','password'])
@@ -31,10 +32,14 @@ export default class UsersController {
 
         const match = await bcrypt.compare(password,user.password);
         if(match){
-          console.log("connected");
-          response.send({
-            messge: "User connected"
-          })
+          // console.log("connected");
+          session.put('user',user)
+          if(user){
+            response.send({
+              user: session.get('user')
+            })
+          }
+
         }else{
           response.status(404).json({
             message: 'paswword incorrect'

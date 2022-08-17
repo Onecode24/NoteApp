@@ -3,11 +3,17 @@
 import Database from "@ioc:Adonis/Lucid/Database";
 import Note from "App/Models/Note";
 import NoteValidator from "App/Validators/NoteValidator";
+import session from "Config/session";
+import { DateTime } from "luxon";
 
 export default class NotesController {
 
-  async newNote({request,response}){
+  async newNote({request,response,session}){
     try {
+      //console.log(session.get('user'));
+      // request.original().user = session.get('user').id;
+      // console.log(session.get('user').id,request.original());
+
       const newNote = await request.validate(NoteValidator);
 
       await Note.create(newNote);
@@ -23,15 +29,12 @@ export default class NotesController {
   }
 
 
-  async allNotes({response,params}){
+  async allNotes({response,session}){
     try {
 
-      const userid = params.userID;
+      const userid = session.get('user').id;
 
-      const allNote = await Database
-      .from('notes')
-      .select('*')
-      .where('user',userid)
+      const allNote = await Note.findBy('user',userid)
 
       response.send(allNote);
 
@@ -46,10 +49,7 @@ export default class NotesController {
     try {
       const id = params.id;
 
-      const note = await Database
-      .from('notes')
-      .select('*')
-      .where('id',id)
+      const note = await Note.find(id)
 
       response.send(note)
     } catch (error) {
@@ -61,10 +61,16 @@ export default class NotesController {
 
   async updateNote({request,params,response}){
     try {
-      await Database
-      .from('notes')
-      .where('id',params.id)
-      .update(request.body())
+
+      const note = await Note.findOrFail(params.id)
+      // note.title = request.body().title;
+      // note.description = request.body().description;
+      await note.merge(request.body());
+
+      if(await note.save()){
+        console.log(note.updatedAt);
+
+      }
 
       response.send({
         message : "Notes is already update"
@@ -79,12 +85,10 @@ export default class NotesController {
 
   async onenote({params,response}){
     try {
-    const note = await Database
-    .from('notes')
-    .select('*')
-    .where('id',params.id)
+    const note = await Note.find(params.id)
 
     response.send(note);
+
     } catch (error) {
       response.status(404).json({
         error : "Note "+params.id+" not found"
@@ -94,10 +98,9 @@ export default class NotesController {
 
   async deleteNote({params,response}){
     try {
-      await Database
-      .from('notes')
-      .where('id',params.id)
-      .delete()
+
+      const note = await Note.find(params.id)
+      await note?.delete();
 
       response.send({
         message : "note already delete"
